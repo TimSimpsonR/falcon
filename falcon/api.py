@@ -17,7 +17,6 @@ import re
 import six
 
 from falcon import api_helpers as helpers
-from falcon import DEFAULT_MEDIA_TYPE
 from falcon.http_error import HTTPError
 from falcon.http_status import HTTPStatus
 from falcon.request import Request, RequestOptions
@@ -25,6 +24,13 @@ from falcon.response import Response
 import falcon.responders
 from falcon import routing
 import falcon.status_codes as status
+
+if False:
+    from typing import Any, Callable, Iterable, Pattern, Tuple, Union  # NOQA
+    Resource = Any  # NOQA
+
+
+DEFAULT_MEDIA_TYPE = 'application/json; charset=UTF-8'  # type: str
 
 
 class API(object):
@@ -111,9 +117,9 @@ class API(object):
         status.HTTP_101,
         status.HTTP_204,
         status.HTTP_304
-    ])
+    ])  # type: Set[str]
 
-    _STREAM_BLOCK_SIZE = 8 * 1024  # 8 KiB
+    _STREAM_BLOCK_SIZE = 8 * 1024  # type: int  # 8 KiB
 
     __slots__ = ('_request_type', '_response_type',
                  '_error_handlers', '_media_type', '_router', '_sinks',
@@ -122,7 +128,8 @@ class API(object):
     def __init__(self, media_type=DEFAULT_MEDIA_TYPE,
                  request_type=Request, response_type=Response,
                  middleware=None, router=None):
-        self._sinks = []
+        # type: (str, type, type, Any, Any) -> None
+        self._sinks = []  # type: List[Any]
         self._media_type = media_type
 
         # set middleware
@@ -133,11 +140,12 @@ class API(object):
         self._request_type = request_type
         self._response_type = response_type
 
-        self._error_handlers = []
+        self._error_handlers = []  # type: List[Any]
         self._serialize_error = helpers.default_serialize_error
         self.req_options = RequestOptions()
 
     def __call__(self, env, start_response):
+        # type: (dict, Callable) -> Iterable
         """WSGI `app` method.
 
         Makes instances of API callable from a WSGI server. May be used to
@@ -156,8 +164,8 @@ class API(object):
         req = self._request_type(env, options=self.req_options)
         resp = self._response_type()
         resource = None
-        middleware_stack = []  # Keep track of executed components
-        params = {}
+        middleware_stack = []  # type: List # Keep track of executed components
+        params = {}  # type: dict
 
         try:
             # NOTE(kgriffs): Using an inner try..except in order to
@@ -226,7 +234,7 @@ class API(object):
         # Set status and headers
         #
         if req.method == 'HEAD' or resp.status in self._BODILESS_STATUS_CODES:
-            body = []
+            body = []  # type: Iterable
         else:
             body, length = self._get_body(resp, env.get('wsgi.file_wrapper'))
             if length is not None:
@@ -248,6 +256,7 @@ class API(object):
         return body
 
     def add_route(self, uri_template, resource, *args, **kwargs):
+        # type: (int, str, *Any, **Any) -> None
         """Associates a templatized URI path with a resource.
 
         A resource is an instance of a class that defines various
@@ -323,6 +332,7 @@ class API(object):
                                **kwargs)
 
     def add_sink(self, sink, prefix=r'/'):
+        # type: (Callable, Union[str, Pattern]) -> None
         """Registers a sink method for the API.
 
         If no route matches a request, but the path in the requested URI
@@ -364,6 +374,7 @@ class API(object):
         self._sinks.insert(0, (prefix, sink))
 
     def add_error_handler(self, exception, handler=None):
+        # type: (int, Exception, Callable) -> None
         """Registers a handler for a given exception error type.
 
         Args:
@@ -396,7 +407,7 @@ class API(object):
 
         if handler is None:
             try:
-                handler = exception.handle
+                handler = exception.handle  # type: ignore
             except AttributeError:
                 raise AttributeError('handler must either be specified '
                                      'explicitly or defined as a static'
@@ -408,6 +419,7 @@ class API(object):
         self._error_handlers.insert(0, (exception, handler))
 
     def set_error_serializer(self, serializer):
+        # type: (Callable) -> None
         """Override the default serializer for instances of HTTPError.
 
         When a responder raises an instance of HTTPError, Falcon converts
@@ -459,6 +471,7 @@ class API(object):
     # ------------------------------------------------------------------------
 
     def _get_responder(self, req):
+        # type: (Request) -> Tuple[Callable, dict, Any]
         """Searches routes for a matching responder.
 
         Args:
@@ -516,6 +529,7 @@ class API(object):
         return (responder, params, resource)
 
     def _compose_status_response(self, req, resp, http_status):
+        # type: (Any, Any, HTTPStatus) -> None
         """Composes a response for the given HTTPStatus instance."""
 
         # PERF(kgriffs): The code to set the status and headers is identical
@@ -531,6 +545,7 @@ class API(object):
         resp.body = http_status.body
 
     def _compose_error_response(self, req, resp, error):
+        # type: (Request, Response, HTTPError) -> None
         """Composes a response for the given HTTPError instance."""
 
         resp.status = error.status
@@ -542,6 +557,7 @@ class API(object):
             self._serialize_error(req, resp, error)
 
     def _call_req_mw(self, stack, req, resp):
+        # type: (List, Request, Response) -> None
         """Run process_request middleware methods."""
 
         for component in self._middleware:
@@ -553,6 +569,7 @@ class API(object):
             stack.append(component)  # keep track from outside
 
     def _call_rsrc_mw(self, stack, req, resp, resource, params):
+        # type: (List, Request, Response, Resource, dict) -> None
         """Run process_resource middleware methods."""
 
         for component in self._middleware:
@@ -561,6 +578,7 @@ class API(object):
                 process_resource(req, resp, resource, params)
 
     def _call_resp_mw(self, stack, req, resp, resource):
+        # type: (List, Request, Response, Resource) -> None
         """Run process_response middleware."""
 
         while stack:
@@ -572,6 +590,7 @@ class API(object):
     # to call using self, and this function is called for most
     # requests.
     def _get_body(self, resp, wsgi_file_wrapper=None):
+        # type: (Response, Callable[[Any, int], Iterable]) -> Tuple[Iterable, int]  # NOQA
         """Converts resp content into an iterable as required by PEP 333
 
         Args:

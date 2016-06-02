@@ -18,7 +18,7 @@ import xml.etree.ElementTree as et
 try:
     from collections import OrderedDict
 except ImportError:
-    OrderedDict = dict
+    OrderedDict = dict  # type: ignore
 
 from falcon.util import uri
 

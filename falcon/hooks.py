@@ -20,8 +20,15 @@ import six
 
 from falcon import HTTP_METHODS
 
+if False:
+    from typing import Any, Callable  # NOQA
+    Resource = Any  # NOQA
+    from falcon.request import Request  # NOQA
+    from falcon.response import Response  # NOQA
+
 
 def before(action):
+    # type: (Callable[[Request, Response, Resource, dict], None]) -> Callable
     """Decorator to execute the given action function *before* the responder.
 
     Args:
@@ -85,6 +92,7 @@ def before(action):
 
 
 def after(action):
+    # type: (Callable[[Request, Response, Resource], None]) -> Callable
     """Decorator to execute the given action function *after* the responder.
 
     Args:
@@ -135,6 +143,7 @@ def after(action):
 
 
 def _has_resource_arg(action):
+    # type: (Any) -> bool
     """Check if the given action function accepts a resource arg."""
 
     if isinstance(action, functools.partial):
@@ -157,6 +166,7 @@ def _has_resource_arg(action):
 
 
 def _wrap_with_after(action, responder):
+    # type: (Callable[[Request, Response, Resource], None], Callable) -> Callable  # NOQA
     """Execute the given action function after a responder method.
 
     Args:
@@ -186,6 +196,7 @@ def _wrap_with_after(action, responder):
 
 
 def _wrap_with_before(action, responder):
+    # type: (Callable[[Request, Response, Resource, dict], None], Callable) -> Callable  # NOQA
     """Execute the given action function before a responder method.
 
     Args:

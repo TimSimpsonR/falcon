@@ -12,7 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+
+__all__ = [
+    "HTTPBadRequest",
+    "HTTPUnauthorized",
+    "HTTPForbidden",
+    "HTTPNotFound",
+    "HTTPMethodNotAllowed",
+    "HTTPNotAcceptable",
+    "HTTPConflict",
+    "HTTPLengthRequired",
+    "HTTPPreconditionFailed",
+    "HTTPRequestEntityTooLarge",
+    "HTTPUnsupportedMediaType",
+    "HTTPUnprocessableEntity",
+    "HTTPTooManyRequests",
+    "HTTPUnavailableForLegalReasons",
+    "HTTPInternalServerError",
+    "HTTPBadGateway",
+    "HTTPServiceUnavailable",
+    "HTTPInvalidHeader",
+    "HTTPMissingHeader",
+    "HTTPInvalidParam",
+    "HTTPMissingParam",
+]
+
+
+# NOTE(tim.simpson): Works around mypy issue:
+#                    https://github.com/python/mypy/issues/1606
+from datetime import datetime as _datetime
 
 from falcon.http_error import HTTPError, NoRepresentation, \
     OptionalRepresentation
@@ -261,7 +289,7 @@ class HTTPRequestEntityTooLarge(HTTPError):
     def __init__(self, title, description, retry_after=None, **kwargs):
         headers = kwargs.setdefault('headers', {})
 
-        if isinstance(retry_after, datetime):
+        if isinstance(retry_after, _datetime):
             headers['Retry-After'] = util.dt_to_http(retry_after)
         elif retry_after is not None:
             headers['Retry-After'] = str(retry_after)
@@ -351,7 +379,7 @@ class HTTPTooManyRequests(HTTPError):
     def __init__(self, title, description, retry_after=None, **kwargs):
         headers = kwargs.setdefault('headers', {})
 
-        if isinstance(retry_after, datetime):
+        if isinstance(retry_after, _datetime):
             headers['Retry-After'] = util.dt_to_http(retry_after)
         elif retry_after is not None:
             headers['Retry-After'] = str(retry_after)
@@ -433,7 +461,7 @@ class HTTPServiceUnavailable(HTTPError):
     def __init__(self, title, description, retry_after, **kwargs):
         headers = kwargs.setdefault('headers', {})
 
-        if isinstance(retry_after, datetime):
+        if isinstance(retry_after, _datetime):
             headers['Retry-After'] = util.dt_to_http(retry_after)
         else:
             headers['Retry-After'] = str(retry_after)

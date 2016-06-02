@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from falcon.routing.compiled import CompiledRouter
+from falcon.routing.compiled import CompiledRouter as DefaultRouter
 from falcon.routing.util import create_http_method_map  # NOQA
 from falcon.routing.util import compile_uri_template  # NOQA
-
-
-DefaultRouter = CompiledRouter

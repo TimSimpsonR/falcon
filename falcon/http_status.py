@@ -41,6 +41,7 @@ class HTTPStatus(Exception):
     )
 
     def __init__(self, status, headers=None, body=None):
+        # type: (str, dict, str) -> None
         self.status = status
         self.headers = headers
         self.body = body

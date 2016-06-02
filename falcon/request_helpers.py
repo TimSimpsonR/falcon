@@ -13,7 +13,12 @@
 # limitations under the License.
 
 
+if False:
+    from typing import Any, Callable  # NOQA
+
+
 def header_property(wsgi_name):
+    # type: (str) -> property
     """Creates a read-only header property.
 
     Args:
@@ -55,6 +60,7 @@ class Body(object):
     """
 
     def __init__(self, stream, stream_len):
+        # type: (Any, int) -> None
         self.stream = stream
         self.stream_len = stream_len
 
@@ -69,6 +75,7 @@ class Body(object):
     next = __next__
 
     def _read(self, size, target):
+        # type: (int, Callable) -> Any
         """Helper function for proxing reads to the underlying stream.
 
         Args:
@@ -95,6 +102,7 @@ class Body(object):
         return target(size)
 
     def read(self, size=None):
+        # type: (int) -> Any
         """Read from the stream.
 
         Args:
@@ -109,6 +117,7 @@ class Body(object):
         return self._read(size, self.stream.read)
 
     def readline(self, limit=None):
+        # type: (int) -> Any
         """Read a line from the stream.
 
         Args:
@@ -123,6 +132,7 @@ class Body(object):
         return self._read(limit, self.stream.readline)
 
     def readlines(self, hint=None):
+        # type: (int) -> Any
         """Read lines from the stream.
 
         Args:

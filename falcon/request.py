@@ -17,12 +17,12 @@ try:
     # standard way of exposing a socket as a file-like object, and
     # is used by wsgiref for wsgi.input.
     import socket
-    NativeStream = socket._fileobject
+    NativeStream = socket._fileobject  # type: ignore
 except AttributeError:
     # NOTE(kgriffs): In Python 3.3, wsgiref implements wsgi.input
     # using _io.BufferedReader which is an alias of io.BufferedReader
     import io
-    NativeStream = io.BufferedReader
+    NativeStream = io.BufferedReader  # type: ignore
 
 import mimeparse
 import six
@@ -39,6 +39,10 @@ from falcon import request_helpers as helpers
 from six.moves import http_cookies
 SimpleCookie = http_cookies.SimpleCookie
 
+
+if False:
+    from typing import Any, Callable, Iterable, Tuple  # NOQA
+    from datetime import date as date_type
 
 DEFAULT_ERROR_LOG_FORMAT = (u'{0:%Y-%m-%d %H:%M:%S} [FALCON] [ERROR]'
                             u' {1} {2}{3} => ')
@@ -245,9 +249,10 @@ class Request(object):
     )
 
     # Allow child classes to override this
-    context_type = None
+    context_type = None  # type: Callable
 
     def __init__(self, env, options=None):
+        # type: (dict, RequestOptions) -> None
         global _maybe_wrap_wsgi_stream
 
         self.env = env
@@ -289,12 +294,12 @@ class Request(object):
             self.query_string = ''
             self._params = {}
 
-        self._cookies = None
+        self._cookies = None  # type: dict
 
-        self._cached_headers = None
-        self._cached_uri = None
-        self._cached_relative_uri = None
-        self._cached_access_route = None
+        self._cached_headers = None  # type: dict
+        self._cached_uri = None  # type: str
+        self._cached_relative_uri = None  # type: str
+        self._cached_access_route = None  # type: Iterable
 
         try:
             self.content_type = self.env['CONTENT_TYPE']
@@ -322,7 +327,7 @@ class Request(object):
 
         if self.context_type is None:
             # Literal syntax is more efficient than using dict()
-            self.context = {}
+            self.context = {}  # type: dict
         else:
             self.context = self.context_type()
 
@@ -341,19 +346,23 @@ class Request(object):
 
     @property
     def client_accepts_json(self):
+        # type: () -> bool
         return self.client_accepts('application/json')
 
     @property
     def client_accepts_msgpack(self):
+        # type: () -> bool
         return (self.client_accepts('application/x-msgpack') or
                 self.client_accepts('application/msgpack'))
 
     @property
     def client_accepts_xml(self):
+        # type: () -> bool
         return self.client_accepts('application/xml')
 
     @property
     def accept(self):
+        # type: () -> str
         # NOTE(kgriffs): Per RFC, a missing accept header is
         # equivalent to '*/*'
         try:
@@ -363,6 +372,7 @@ class Request(object):
 
     @property
     def content_length(self):
+        # type: () -> int
         try:
             value = self.env['CONTENT_LENGTH']
         except KeyError:
@@ -391,18 +401,22 @@ class Request(object):
 
     @property
     def date(self):
+        # type: () -> datetime
         return self.get_header_as_datetime('Date')
 
     @property
     def if_modified_since(self):
+        # type: () -> datetime
         return self.get_header_as_datetime('If-Modified-Since')
 
     @property
     def if_unmodified_since(self):
+        # type: () -> datetime
         return self.get_header_as_datetime('If-Unmodified-Since')
 
     @property
     def range(self):
+        # type: () -> Tuple[int, int]
         try:
             value = self.env['HTTP_RANGE']
             if '=' in value:
@@ -440,6 +454,7 @@ class Request(object):
 
     @property
     def range_unit(self):
+        # type: () -> str
         try:
             value = self.env['HTTP_RANGE']
 
@@ -454,14 +469,17 @@ class Request(object):
 
     @property
     def app(self):
+        # type: () -> str
         return self.env.get('SCRIPT_NAME', '')
 
     @property
     def protocol(self):
+        # type: () -> str
         return self.env['wsgi.url_scheme']
 
     @property
     def uri(self):
+        # type: () -> str
         if self._cached_uri is None:
             env = self.env
             protocol = env['wsgi.url_scheme']
@@ -502,6 +520,7 @@ class Request(object):
 
     @property
     def host(self):
+        # type: () -> str
         try:
             # NOTE(kgriffs): Prefer the host header; the web server
             # isn't supposed to mess with it, so it should be what
@@ -517,12 +536,14 @@ class Request(object):
 
     @property
     def subdomain(self):
+        # type: () -> str
         # PERF(kgriffs): .partition is slightly faster than .split
         subdomain, sep, remainder = self.host.partition('.')
         return subdomain if sep else None
 
     @property
     def relative_uri(self):
+        # type: () -> str
         if self._cached_relative_uri is None:
             if self.query_string:
                 self._cached_relative_uri = (self.app + self.path + '?' +
@@ -534,6 +555,7 @@ class Request(object):
 
     @property
     def headers(self):
+        # type: () -> dict
         # NOTE(kgriffs: First time here will cache the dict so all we
         # have to do is clone it in the future.
         if self._cached_headers is None:
@@ -554,10 +576,12 @@ class Request(object):
 
     @property
     def params(self):
+        # type: () -> dict
         return self._params
 
     @property
     def cookies(self):
+        # type: () -> dict
         if self._cookies is None:
             # NOTE(tbug): We might want to look into parsing
             # cookies ourselves. The SimpleCookie is doing a
@@ -573,6 +597,7 @@ class Request(object):
 
     @property
     def access_route(self):
+        # type: () -> Iterable[str]
         if self._cached_access_route is None:
             # NOTE(kgriffs): Try different headers in order of
             # preference; if none are found, fall back to REMOTE_ADDR.
@@ -601,6 +626,7 @@ class Request(object):
 
     @property
     def remote_addr(self):
+        # type: () -> str
         return self.env.get('REMOTE_ADDR')
 
     # ------------------------------------------------------------------------
@@ -608,6 +634,7 @@ class Request(object):
     # ------------------------------------------------------------------------
 
     def client_accepts(self, media_type):
+        # type: (str) -> bool
         """Determines whether or not the client accepts a given media type.
 
         Args:
@@ -633,6 +660,7 @@ class Request(object):
             return False
 
     def client_prefers(self, media_types):
+        # type: (Iterable[str]) -> str
         """Returns the client's preferred media type, given several choices.
 
         Args:
@@ -656,6 +684,7 @@ class Request(object):
         return (preferred_type if preferred_type else None)
 
     def get_header(self, name, required=False):
+        # type: (str, bool) -> str
         """Retrieve the raw string value for the given header.
 
         Args:
@@ -700,6 +729,7 @@ class Request(object):
             raise HTTPMissingHeader(name)
 
     def get_header_as_datetime(self, header, required=False, obs_date=False):
+        # type: (str, bool, bool) -> datetime
         """Return an HTTP header with HTTP-Date values as a datetime.
 
         Args:
@@ -733,6 +763,7 @@ class Request(object):
             raise HTTPInvalidHeader(msg, header)
 
     def get_param(self, name, required=False, store=None, default=None):
+        # type: (str, bool, dict, Any) -> Any
         """Return the raw value of a query string parameter as a string.
 
         Note:
@@ -795,6 +826,7 @@ class Request(object):
 
     def get_param_as_int(self, name,
                          required=False, min=None, max=None, store=None):
+        # type: (str, bool, int, int, dict) -> int
         """Return the value of a query string parameter as an int.
 
         Args:
@@ -861,6 +893,7 @@ class Request(object):
 
     def get_param_as_bool(self, name, required=False, store=None,
                           blank_as_true=False):
+        # type: (str, bool, dict, bool) -> bool
         """Return the value of a query string parameter as a boolean
 
         The following boolean strings are supported::
@@ -925,6 +958,7 @@ class Request(object):
 
     def get_param_as_list(self, name,
                           transform=None, required=False, store=None):
+        # (str, Callable[[Any], Any], bool, {}) -> List
         """Return the value of a query string parameter as a list.
 
         List items must be comma-separated or must be provided
@@ -997,6 +1031,7 @@ class Request(object):
 
     def get_param_as_date(self, name, format_string='%Y-%m-%d',
                           required=False, store=None):
+        # type: (str, str, bool, dict) -> date_type
         """Return the value of a query string parameter as a date.
 
         Args:
@@ -1040,6 +1075,7 @@ class Request(object):
         return date
 
     def log_error(self, message):
+        # type: (str) -> None
         """Write an error message to the server's log.
 
         Prepends timestamp and request info to message, and writes the
@@ -1075,6 +1111,7 @@ class Request(object):
     # ------------------------------------------------------------------------
 
     def _wrap_stream(self):
+        # type: () -> None
         try:
             content_length = self.content_length or 0
 
@@ -1088,6 +1125,7 @@ class Request(object):
         self.stream = helpers.Body(self.stream, content_length)
 
     def _parse_form_urlencoded(self):
+        # type: () -> None
         # NOTE(kgriffs): This assumes self.stream has been patched
         # above in the case of wsgiref, so that self.content_length
         # is not needed. Normally we just avoid accessing
@@ -1119,6 +1157,7 @@ class Request(object):
             self._params.update(extra_params)
 
     def _parse_rfc_forwarded(self):
+        # type: () -> Iterable
         """Parse RFC 7239 "Forwarded" header.
 
         Returns:
@@ -1176,5 +1215,6 @@ class RequestOptions(object):
     )
 
     def __init__(self):
+        # type: () -> None
         self.keep_blank_qs_values = False
         self.auto_parse_form_urlencoded = False

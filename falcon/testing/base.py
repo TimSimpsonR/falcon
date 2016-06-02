@@ -17,7 +17,7 @@ import itertools
 try:
     import testtools as unittest
 except ImportError:  # pragma: nocover
-    import unittest
+    import unittest  # type: ignore
 
 import falcon
 import falcon.request

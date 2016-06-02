@@ -32,6 +32,10 @@ CookieError = http_cookies.CookieError
 GMT_TIMEZONE = TimezoneGMT()
 
 
+if False:
+    from typing import Any, Iterable, Tuple, Union  # NOQA
+    from datetime import datetime
+
 class Response(object):
     """Represents an HTTP response to a client request.
 
@@ -102,19 +106,21 @@ class Response(object):
     )
 
     def __init__(self):
+        # type: () -> None
         self.status = '200 OK'
-        self._headers = {}
+        self._headers = {}  # type: dict
 
         # NOTE(tbug): will be set to a SimpleCookie object
         # when cookie is set via set_cookie
-        self._cookies = None
+        self._cookies = None  # type: SimpleCookie
 
-        self.body = None
-        self.data = None
-        self.stream = None
-        self.stream_len = None
+        self.body = None  # type: Union[bytes, str]
+        self.data = None  # type: bytes
+        self.stream = None  # type: Any
+        self.stream_len = None  # type: int
 
     def set_stream(self, stream, stream_len):
+        # type: (Any, int) -> None
         """Convenience method for setting both `stream` and `stream_len`.
 
         Although the `stream` and `stream_len` properties may be set
@@ -134,6 +140,7 @@ class Response(object):
 
     def set_cookie(self, name, value, expires=None, max_age=None,
                    domain=None, path=None, secure=True, http_only=True):
+        # type: (str, str, datetime, int, str, str, bool, bool) -> None
         """Set a response cookie.
 
         Note:
@@ -240,6 +247,7 @@ class Response(object):
             self._cookies[name]['httponly'] = http_only
 
     def unset_cookie(self, name):
+        # type: (str) -> None
         """Unset a cookie in the response
 
         Note:
@@ -260,6 +268,7 @@ class Response(object):
         self._cookies[name]['expires'] = -1
 
     def get_header(self, name):
+        # type: (str) -> str
         """Retrieve the raw string value for the given header.
 
         Args:
@@ -273,6 +282,7 @@ class Response(object):
         return self._headers.get(name.lower(), None)
 
     def set_header(self, name, value):
+        # type: (Union[bytes, str], Union[bytes, str]) -> None
         """Set a header for this response to a given value.
 
         Warning:
@@ -295,6 +305,7 @@ class Response(object):
         self._headers[name.lower()] = value
 
     def append_header(self, name, value):
+        # type: (Union[bytes, str], Union[bytes, str]) -> None
         """Set or append a header for this response.
 
         Warning:
@@ -323,6 +334,7 @@ class Response(object):
         self._headers[name] = value
 
     def set_headers(self, headers):
+        # type: (Union[dict, Iterable]) -> None
         """Set several headers at once.
 
         Warning:
@@ -357,6 +369,7 @@ class Response(object):
 
     def add_link(self, target, rel, title=None, title_star=None,
                  anchor=None, hreflang=None, type_hint=None):
+        # type: (str, str, str, Tuple[str, str], str, Union[str, Iterable], str) -> None  # NOQA
         """
         Add a link header to the response.
 
@@ -555,6 +568,7 @@ class Response(object):
         lambda v: ', '.join(v))
 
     def _encode_header(self, name, value, py2=PY2):
+        # type: (Union[str, bytes], Union[str, bytes], bool) -> Tuple[bytes, bytes]  # NOQA
         if py2:
             if isinstance(name, unicode):
                 name = name.encode('ISO-8859-1')
@@ -565,6 +579,7 @@ class Response(object):
         return name, value
 
     def _wsgi_headers(self, media_type=None, py2=PY2):
+        # type: (str, bool) ->  List[Tuple[str, str]]
         """Convert headers into the format expected by WSGI servers.
 
         Args:

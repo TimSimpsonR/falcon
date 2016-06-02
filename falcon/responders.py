@@ -18,6 +18,10 @@ from falcon.status_codes import HTTP_204
 from falcon.status_codes import HTTP_405
 
 
+if False:
+    from typing import Callable  # NOQA
+
+
 def path_not_found(req, resp, **kwargs):
     """Raise 404 HTTPNotFound error"""
     raise HTTPNotFound()
@@ -46,6 +50,7 @@ def create_method_not_allowed(allowed_methods):
 
 
 def create_default_options(allowed_methods):
+    # type: (List[str]) -> Callable
     """Creates a default responder for the OPTIONS method
 
     Args:

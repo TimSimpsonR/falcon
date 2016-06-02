@@ -14,8 +14,14 @@
 
 from falcon import util
 
+try:
+    from typing import Any, Callable  # NOQA
+except ImportError:
+    pass
+
 
 def prepare_middleware(middleware=None):
+    # type: (Any) -> List
     """Check middleware interface and prepare it to iterate.
 
     Args:
@@ -27,7 +33,7 @@ def prepare_middleware(middleware=None):
 
     # PERF(kgriffs): do getattr calls once, in advance, so we don't
     # have to do them every time in the request path.
-    prepared_middleware = []
+    prepared_middleware = []  # type: List
 
     if middleware is None:
         middleware = []
@@ -54,6 +60,7 @@ def prepare_middleware(middleware=None):
 
 
 def default_serialize_error(req, resp, exception):
+    # (Request, Response, Exception) -> None
     """Serialize the given instance of HTTPError.
 
     This function determines which of the supported media types, if
@@ -115,6 +122,7 @@ def default_serialize_error(req, resp, exception):
 
 
 def wrap_old_error_serializer(old_fn):
+    # type: (Callable) -> Callable
     """Wraps an old-style error serializer to add body/content_type setting.
 
     Args:
