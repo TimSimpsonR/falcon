@@ -13,6 +13,9 @@
 # limitations under the License.
 
 import six
+if False:
+    from typing import AnyStr, Callable, Union
+
 
 # NOTE(kgriffs): See also RFC 3986
 _UNRESERVED = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -28,7 +31,7 @@ _HEX_DIGITS = '0123456789ABCDEFabcdef'
 
 
 def _create_char_encoder(allowed_chars):
-
+    # type: (str) -> Callable
     lookup = {}
 
     for code_point in range(256):
@@ -46,7 +49,7 @@ def _create_char_encoder(allowed_chars):
 
 
 def _create_str_encoder(is_value):
-
+    # type: (bool) -> Callable[[str], str]
     allowed_chars = _UNRESERVED if is_value else _ALL_ALLOWED
     encode_char = _create_char_encoder(allowed_chars)
 
@@ -99,7 +102,7 @@ Returns:
 
 
 encode_value = _create_str_encoder(True)
-encode_value.name = 'encode_value'
+encode_value.name = 'encode_value'  # type: ignore
 encode_value.__doc__ = """Encodes a value string according to RFC 3986.
 
 Disallowed characters are percent-encoded in a way that models
@@ -137,6 +140,7 @@ if six.PY2:
                         for b in _HEX_DIGITS)
 
     def decode(encoded_uri):
+        # type: (Union[str, unicode]) -> Union[str, unicode]
         """Decodes percent-encoded characters in a URI or query string.
 
         This function models the behavior of `urllib.parse.unquote_plus`, but
@@ -200,6 +204,7 @@ else:
                         for b in _HEX_DIGITS)
 
     def decode(encoded_uri):
+        # type(str) -> str
         """Decodes percent-encoded characters in a URI or query string.
 
         This function models the behavior of `urllib.parse.unquote_plus`,
@@ -247,6 +252,7 @@ else:
 
 
 def parse_query_string(query_string, keep_blank_qs_values=False):
+    # type(str, bool) -> Mapping[str, Union[str, List[str]]]
     """Parse a query string into a dict.
 
     Query string parameters are assumed to use standard form-encoding. Only

@@ -18,6 +18,8 @@ import inspect
 import warnings
 
 import six
+if False:
+    from typing import Any, Callable
 
 __all__ = (
     'deprecated',
@@ -43,6 +45,7 @@ class DeprecatedWarning(UserWarning):
 
 
 def deprecated(instructions):
+    # type: (str) -> Callable
     """Flags a method as deprecated.
 
     This function returns a decorator which can be used to mark deprecated
@@ -76,6 +79,7 @@ def deprecated(instructions):
 
 
 def http_now():
+    # type: () -> str
     """Returns the current UTC time as an IMF-fixdate.
 
     Returns:
@@ -87,6 +91,7 @@ def http_now():
 
 
 def dt_to_http(dt):
+    # type: (datetime.datetime) -> str
     """Converts a ``datetime`` instance to an HTTP date string.
 
     Args:
@@ -102,6 +107,7 @@ def dt_to_http(dt):
 
 
 def http_date_to_dt(http_date, obs_date=False):
+    # type: (str, bool) -> datetime.datetime
     """Converts an HTTP date string to a datetime instance.
 
     Args:
@@ -146,6 +152,7 @@ def http_date_to_dt(http_date, obs_date=False):
 
 
 def to_query_str(params):
+    # type: (dict) -> str
     """Converts a dictionary of params to a query string.
 
     Args:
@@ -182,6 +189,7 @@ def to_query_str(params):
 
 
 def get_bound_method(obj, method_name):
+    # type: (Any, str) -> Callable
     """Get a bound method of the given object by name.
 
     Args:

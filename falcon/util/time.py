@@ -1,4 +1,13 @@
 import datetime
+if False:
+    from typing import Optional
+
+from complicatedthing import call_the_thing
+
+def something_complext(*args, **kwargs):
+    a = call_the_thing(*args, **kwargs)
+    a.do_thing()
+    return a.value()
 
 
 class TimezoneGMT(datetime.tzinfo):
@@ -16,10 +25,11 @@ class TimezoneGMT(datetime.tzinfo):
             datetime.timedelta: GMT offset, which is equivalent to UTC and
                 so is aways 0.
         """
-
+        # type: type(datetime.tzinfo.utcoffset)
         return self.GMT_ZERO
 
     def tzname(self, dt):
+        # (datetime.datetime) -> str
         """Get the name of this timezone.
 
         Args:
@@ -32,6 +42,7 @@ class TimezoneGMT(datetime.tzinfo):
         return 'GMT'
 
     def dst(self, dt):
+        # type: (datetime.datetime) -> datetime.timedelta
         """Return the daylight saving time (DST) adjustment.
 
         Args:

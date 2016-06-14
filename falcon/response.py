@@ -26,15 +26,28 @@ from falcon.util import dt_to_http, TimezoneGMT
 from falcon.util.uri import encode as uri_encode
 from falcon.util.uri import encode_value as uri_encode_value
 
+if False:
+    import typing
+    from typing import Any, Iterable, Tuple, Union  # NOQA
+    from datetime import datetime
+    # NOTE(tim.simpson): We miss out on some good checks in Py27 mode with this
+    #                    hack. However, a generic type called "Text" will be
+    #                    added to the typing module / typeshed soon which will
+    #                    resolve this. For now MyPy knows about it anyway. :)
+    unicode = typing.Text
+    py2 = True
+
+
 SimpleCookie = http_cookies.SimpleCookie
 CookieError = http_cookies.CookieError
 
 GMT_TIMEZONE = TimezoneGMT()
 
+if py2:
+    Text = unicode
+else:
+    Text = str
 
-if False:
-    from typing import Any, Iterable, Tuple, Union  # NOQA
-    from datetime import datetime
 
 class Response(object):
     """Represents an HTTP response to a client request.

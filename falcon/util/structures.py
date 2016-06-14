@@ -15,6 +15,8 @@
 #    limitations under the License.
 
 import collections
+if False:
+    from typing import Any, Iterable, Iterator, Mapping, Tuple, Union
 
 
 # TODO(kgriffs): If we ever diverge from what is upstream in Requests,
@@ -48,29 +50,37 @@ class CaseInsensitiveDict(collections.MutableMapping):  # pragma: no cover
 
     """
     def __init__(self, data=None, **kwargs):
-        self._store = dict()
+        # type: (Union[Mapping[Any, Any], Iterable[Tuple[Any, Any]]], **Any) -> None  # NOQA
+        self._store = dict()  # type: dict
         if data is None:
             data = {}
-        self.update(data, **kwargs)
+        #TODO(tim.simpson): There is oddness in typeshed re: MutableMapping.
+        self.update(data, **kwargs)  # type: ignore
 
     def __setitem__(self, key, value):
+        # type: (str, Any) -> None
         # Use the lowercased key for lookups, but store the actual
         # key alongside the value.
         self._store[key.lower()] = (key, value)
 
     def __getitem__(self, key):
+        # type: (str) -> Any
         return self._store[key.lower()][1]
 
     def __delitem__(self, key):
+        # type: (str) -> None
         del self._store[key.lower()]
 
     def __iter__(self):
+        # type: () -> Iterator
         return (casedkey for casedkey, mappedvalue in self._store.values())
 
     def __len__(self):
+        # type: () -> int
         return len(self._store)
 
     def lower_items(self):
+        # type: () -> Iterable[Tuple[str, Any]]
         """Like iteritems(), but with all lowercase keys."""
         return (
             (lowerkey, keyval[1])
@@ -79,6 +89,7 @@ class CaseInsensitiveDict(collections.MutableMapping):  # pragma: no cover
         )
 
     def __eq__(self, other):
+        # type: (Any) -> Union[bool, NotImplemented]
         if isinstance(other, collections.Mapping):
             other = CaseInsensitiveDict(other)
         else:
@@ -88,7 +99,9 @@ class CaseInsensitiveDict(collections.MutableMapping):  # pragma: no cover
 
     # Copy is required
     def copy(self):
+        # type: () -> CaseInsensitiveDict
         return CaseInsensitiveDict(self._store.values())
 
     def __repr__(self):
+        # type: () -> str
         return '%s(%r)' % (self.__class__.__name__, dict(self.items()))

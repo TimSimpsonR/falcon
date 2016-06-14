@@ -17,10 +17,13 @@ import re
 import six
 
 from falcon import HTTP_METHODS, responders
-
+if False:
+    from typing import Any, Callable, Pattern, Set, Tuple  # NOQA
+    Resource = Any
 
 # NOTE(kgriffs): Published method; take care to avoid breaking changes.
 def compile_uri_template(template):
+    # type: (str) -> Tuple[Set[str], Pattern]
     """Compile the given URI template string into a pattern matcher.
 
     This function can be used to construct custom routing engines that
@@ -80,6 +83,7 @@ def compile_uri_template(template):
 
 
 def create_http_method_map(resource):
+    # type: (Resource) -> Dict[str, Callable]
     """Maps HTTP methods (e.g., 'GET', 'POST') to methods of a resource object.
 
     Args:
@@ -96,7 +100,9 @@ def create_http_method_map(resource):
 
     method_map = {}
 
-    for method in HTTP_METHODS:
+    # NOTE(tim.simpson): MyPy currently can't determine HTTP_METHOD's types
+    #                    due to import order issues.
+    for method in HTTP_METHODS:  # type: ignore
         try:
             responder = getattr(resource, 'on_' + method.lower())
         except AttributeError:
@@ -118,7 +124,7 @@ def create_http_method_map(resource):
 
     na_responder = responders.create_method_not_allowed(allowed_methods)
 
-    for method in HTTP_METHODS:
+    for method in HTTP_METHODS:  # type: ignore
         if method not in allowed_methods:
             method_map[method] = na_responder
 

@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import re
-
+if False:
+    from typing import Any, Callable, List, Tuple  # NOQA
+    Resource = Any  # NOQA
 
 TAB_STR = ' ' * 4
 
@@ -32,14 +34,16 @@ class CompiledRouter(object):
     """
 
     def __init__(self):
-        self._roots = []
-        self._find = self._compile()
-        self._code_lines = None
-        self._src = None
-        self._expressions = None
-        self._return_values = None
+        # type: () -> None
+        self._roots = []  # type: List
+        self._find = self._compile()  # type: Callable
+        self._code_lines = None  # type: List[str]
+        self._src = None  # type: str
+        self._expressions = None  # type: List
+        self._return_values = None  # type: List
 
     def add_route(self, uri_template, method_map, resource):
+        # type: (str, dict, Resource) -> str
         """Adds a route between URI path template and resource."""
         # Can't start with a number, since these eventually get passed as
         # args to on_* responders
@@ -85,9 +89,10 @@ class CompiledRouter(object):
         self._find = self._compile()
 
     def find(self, uri):
+        # type: (str) -> Tuple[Resource, dict, dict]
         """Finds resource and method map for a URI, or returns None."""
         path = uri.lstrip('/').split('/')
-        params = {}
+        params = {}  # type: dict
         node = self._find(path, self._return_values, self._expressions, params)
 
         if node is not None:
@@ -96,6 +101,7 @@ class CompiledRouter(object):
             return None
 
     def _compile_tree(self, nodes, indent=1, level=0, fast_return=True):
+        # type: (List, int, int, bool) -> None
         """Generates Python code for a routing tree or subtree."""
 
         def line(text, indent_offset=0):
@@ -195,6 +201,7 @@ class CompiledRouter(object):
             line('return None')
 
     def _compile(self):
+        # type: () -> Callable
         """Generates Python code for entire routing tree.
 
         The generated code is compiled and the resulting Python method is
@@ -216,7 +223,7 @@ class CompiledRouter(object):
 
         self._src = '\n'.join(self._code_lines)
 
-        scope = {}
+        scope = {}  # type: dict
         exec(compile(self._src, '<string>', 'exec'), scope)
 
         return scope['find']
@@ -228,7 +235,8 @@ class CompiledRouterNode(object):
     _regex_vars = re.compile('{([-_a-zA-Z0-9]+)}')
 
     def __init__(self, raw_segment, method_map=None, resource=None):
-        self.children = []
+        # type: (str, dict, Resource) -> None
+        self.children = []  # type: List
 
         self.raw_segment = raw_segment
         self.method_map = method_map
@@ -273,11 +281,13 @@ class CompiledRouterNode(object):
             self.is_var = False
 
     def matches(self, segment):
+        # type: (str) -> bool
         """Returns True if this node matches the supplied template segment."""
 
         return segment == self.raw_segment
 
     def conflicts_with(self, segment):
+        # type: (str) -> bool
         """Returns True if this node conflicts with a given template segment."""
 
         # NOTE(kgriffs): This method assumes that the caller has already

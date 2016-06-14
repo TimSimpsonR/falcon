@@ -18,6 +18,7 @@ from falcon import bench
 
 
 def fail(returncode, e):
+    # type: (int, Exception) -> None
     sys.stderr.write('\nERROR: %s\n\n' % e)
     sys.exit(returncode)
 
